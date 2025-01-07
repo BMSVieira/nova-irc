@@ -1,5 +1,5 @@
 <p align="center">
- <img width="250" src="https://botsolutions.eu/assets/img/novairc/novamain.png">
+ <img width="250" src="https://botsolutions.eu/assets/img/novairc/novamain1.png">
  <br><br>
  Welcome to Nova IRC!<br><br>
  Lightweight IRC client built with Node.js, designed to provide a fast and seamless chat experience.<br>
