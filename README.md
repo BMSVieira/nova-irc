@@ -1,2 +1,2 @@
-# nova-irc
- 
+# epic-irc
+ All new irc engine

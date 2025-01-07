@@ -1,0 +1,18 @@
+{
+  "name": "epicirc",
+  "version": "1.0.0",
+  "main": "irc-client.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "buffer": "^6.0.3",
+    "events": "^3.3.0",
+    "net": "^1.0.2",
+    "tls": "^0.0.1"
+  }
+}
