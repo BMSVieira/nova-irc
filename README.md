@@ -1,4 +1,5 @@
 <p align="center">
+ <br>
  <img width="250" src="https://botsolutions.eu/assets/img/novairc/novamain1.png">
  <br><br>
  Welcome to Nova IRC!<br><br>
