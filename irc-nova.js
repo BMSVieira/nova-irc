@@ -23,7 +23,7 @@ class novaIRC extends EventEmitter {
         this.floodProtectionDelay = 1000;
     }
 
-    // Conectar ao Servidor (SSL Opcional, falso por defeito)
+    // Conect to server (SSL is opcional, false by default)
     connect(options = {}) {
         const {
             server = 'localhost',
@@ -34,7 +34,7 @@ class novaIRC extends EventEmitter {
                 rejectUnauthorized = false,
         } = options;
 
-        // Determina o tipo de conexão, baseado em SSL
+        // Conection type, based on SLL
         const connectionOptions = ssl ? {
             rejectUnauthorized
         } : {};
@@ -50,18 +50,19 @@ class novaIRC extends EventEmitter {
 
             this.emit('connected');
 
-            // Identifica-se
+            // Identifies Nick and Username
             this.sendRaw(`NICK ${this.nickname}`);
-            this.sendRaw(`USER ${this.username} 0 * :Nova IRC Engine`);
+            this.sendRaw(`USER ${this.username} 0 * :Nova IRC`);
 
-            // Se tiver password, envia diretamente o IDENTIFY
+
+            // If it has Password, automatically sends IDENTIFY
             if (this.password) {
                 this.sendRaw(`PRIVMSG NickServ :IDENTIFY ${this.password}`);
             }
 
         });
 
-        // Verifica por uma request de Ping, se passar muito tempo, envia um Pong.
+        // Check for a ping request, if it takes too long, sends a pong.
         this.startPingChecker();
 
         this.client.on('data', (data) => {
@@ -78,7 +79,7 @@ class novaIRC extends EventEmitter {
                     return;
                 }
 
-                // Comando da mensagem
+                // Command Message
                 const {
                     command,
                     params
@@ -98,15 +99,13 @@ class novaIRC extends EventEmitter {
                     case 'rpl_welcome':
                     case 'rpl_myinfo':
                     case 'rpl_isupport':
-                    case '396':
-                    case '042':
-                    case '376':
-                    case '353':
-                    case '366':
+                    case 'rpl_endofmotd':
                     case 'rpl_endofbanlist':
                     case 'rpl_endofnames':
-                        // Ignorar comandos inuteis.
-                        break;
+                    case '396':
+                    case '042':
+                        // Ignore these commands
+                    break;
                     case 'rpl_motd':
                     case 'rpl_motdstart':
                     case 'rpl_endofmotd':
@@ -155,7 +154,7 @@ class novaIRC extends EventEmitter {
                         });
                         break;
 
-                    case 'rpl_endofwhois': // End of WHOIS
+                    case 'rpl_endofwhois':
                         this.emit('whoisEnd', {
                             nick: params[1],
                             raw: message,
@@ -189,7 +188,7 @@ class novaIRC extends EventEmitter {
                         const target = params[0];
                         const content = params[1];
 
-                        // Emite o evento geral.
+                        // General message event
                         this.emit('message', {
                             sender,
                             target,
@@ -197,7 +196,7 @@ class novaIRC extends EventEmitter {
                             raw: message,
                         });
 
-                        // Verifica se é PV ou Geral
+                        // Check if it is Private or in Channel
                         if (target === this.nickname) {
                             this.emit('directMessage', {
                                 sender,
@@ -262,24 +261,34 @@ class novaIRC extends EventEmitter {
                         });
                         break;
                     case 'err_nosuchnick':
-                        this.emit('error', new Error('No such nickname exists: '+params[1]), parsedMessage);
+                        this.emit('error', new Error(), parsedMessage);
                         this.emit('whoisError', {
                             error: "err_nosuchnick",
                             code: 401
                         });
                         break;
+
+                    // Error commands
+                    case 'err_noprivileges':
+                    case 'err_chanoprivsneeded':
                     case 'err_usernotinchannel':
-                        this.emit('error', new Error('User not in channel: '+params[1]), parsedMessage);
-                        break;
                     case 'err_nicknameinuse':
-                        this.emit('error', new Error('Username in use: '+params[1]), parsedMessage);
-                        break;
                     case 'err_notregistered':
-                        this.emit('error', new Error('You have not registered'), parsedMessage);
-                        break;
+                    case 'err_nicknameinuse':
+                    case 'err_notregistered':
+                    case 'err_channelisfull':
+                    case 'err_unknownmode':
+                    case 'err_inviteonlychan':
+                    case 'err_bannedfromchan':
+                    case 'err_alreadyregistred':
+                    case 'err_notregistered':
+                    case 'err_useronchannel':
+                    case 'err_notonchannel':
+                    case 'err_usernotinchannel':
+                    case 'err_badchannelkey':
                     case 'ERROR':
-                        this.emit('error', new Error('Fatal Error'), parsedMessage);
-                        break;                        
+                        this.emit('error', new Error(), parsedMessage);
+                        break;                    
                     default:
                         this.emit('unknown', {
                             command,
@@ -372,7 +381,7 @@ class novaIRC extends EventEmitter {
         return message;
     }
 
-    // Guarda as variaveis de identificação
+    // Sets identification credentials
     setCredentials(nickname, username, password = null) {
 
         if(nickname == "" || username == "")
@@ -386,14 +395,14 @@ class novaIRC extends EventEmitter {
         this.password = password;
     }
 
-    // Junta-se a um canal
-    joinChannel(channel) {
+    // Joins Channel
+    joinChannel(channel, password = '') {
         setTimeout(() => {
-            this.sendRaw(`JOIN ${channel}`);
+            this.sendRaw(`JOIN ${channel} ${password}`);
         }, "2000");
     }
 
-    // Manda uma mensagem a um canal ou user
+    // Sends a message to a user or channel
     sendMessage(target, message, color = null) {
 
         // If predefined color is not null.
@@ -429,20 +438,20 @@ class novaIRC extends EventEmitter {
         this.sendRaw(`PRIVMSG ${target} :${formattedMessage}`);
     }
 
-    // Manda uma mensagem crua ao servidor
+    // Sends RAW message to the server
     sendRaw(command) {
         this.commandQueue.push(command);
         this.processQueue();
     }
 
-    // Faz bypass do floodProtection e envia um comando imediato
+    // Bypass FloodProtection for a immediate message to the server
     sendRawImmediate(command) {
         if (this.client) {
             this.client.write(`${command}\r\n`);
         }
     }
 
-    // Processa a lista de queue
+    // Queue list processing
     processQueue() {
         if (this.isProcessingQueue) return;
 
@@ -462,45 +471,45 @@ class novaIRC extends EventEmitter {
         }, this.floodProtectionDelay);
     }
 
-    // Limpa o queue
+    // Clear queue
     clearQueue() {
         this.commandQueue = [];
     }
 
-    // Disconecta-se de um canal especifico
+    // Disconects from a specific channel
     part(channel, message = '') {
         const partMessage = message ? ` :${message}` : '';
         this.sendRaw(`PART ${channel}${partMessage}`);
     }
 
-    // Obtem todos os nicks num canal
+    // Gets all nicks from a chanell
     names(channel) {
         this.sendRaw(`NAMES ${channel}`);
     }
 
     // Obtem todos os nicks num canal
     kick(channel, user, reason = '') {
-        const formattedReason = reason ? ` :${reason}` : ''; // Add reason only if provided
+        const formattedReason = reason ? ` :${reason}` : '';
         this.sendRaw(`KICK ${channel} ${user}${formattedReason}`);
     }
 
-    // Adiciona um BAN na lista
+    // Add a BAN to the list
     ban(channel, mask) {
         this.sendRaw(`MODE ${channel} +b ${mask}`);
     }
 
-    // Desconecta-se do servidor.
+    // Disconnects from server
     disconnect(message = 'Goodbye!') {
         this.sendRaw(`QUIT :${message}`);
         this.client.end();
     }
 
-    // Obtem uma lista de bans do canal
+    // Gets a BAN List from a channel
     banlist(channel) {
         this.sendRaw(`MODE ${channel} +b`);
     }
 
-    // Obtem a lista completa de Whois, concatena numa só resposta.
+    // Get a complete WHOIS information form a specific user
     whois(nickname) {
         return new Promise((resolve, reject) => {
             const whoisData = {

@@ -4,7 +4,7 @@ const nova = require('./irc-nova');
 const bot = new nova();
 
 // ##############################################
-// Credênciais e autenticação
+// Credentials and Authentication
 // ##############################################
 
 // Set bot credentials (nickname and username)
@@ -14,9 +14,6 @@ const bot = new nova();
 bot.setCredentials('NovaIRC', 'Nova Portugal');
 
 // Conetar-se ao chat
-// @url
-// @porta
-// @ssl (boolean)
 bot.connect({
     server: 'irc.libera.chat',
     port: 6697,
@@ -26,18 +23,16 @@ bot.connect({
     rejectUnauthorized: false, // Opcional, default é false
 });
 
-// Recebe um evento quando se conecta
-bot.on('connected', () => {
-
-    console.log(' ** BOT Connectou-se **');
-
-    // Junta-se ao canal.
-    bot.joinChannel('#testingpg');
-});
 
 // ##############################################
 // Eventos Listener
 // ##############################################
+
+// Recebe um evento quando se conecta
+bot.on('connected', () => {
+    // Junta-se ao canal.
+    bot.joinChannel('#testingpg', 'test');
+});
 
 // Receber uma mensagem RAW
 // @message
