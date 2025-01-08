@@ -1,6 +1,6 @@
 {
   "name": "nova-irc",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "main": "irc-client.js",
   "description": "Easy-to-use IRC client",
   "scripts": {
@@ -14,9 +14,8 @@
     "bot",
     "nodejs"
   ],
-  "author": "",
+  "author": "Bruno Vieira",
   "license": "ISC",
-  "description": "",
   "dependencies": {
     "buffer": "^6.0.3",
     "events": "^3.3.0",
