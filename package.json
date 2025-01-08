@@ -1,5 +1,5 @@
 {
-  "name": "epicirc",
+  "name": "novairc",
   "version": "1.0.0",
   "main": "irc-client.js",
   "scripts": {

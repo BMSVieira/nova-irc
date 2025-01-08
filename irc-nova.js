@@ -82,7 +82,8 @@ class novaIRC extends EventEmitter {
                 // Command Message
                 const {
                     command,
-                    params
+                    params,
+                    commandType
                 } = parsedMessage;
 
                 switch (command) {
@@ -267,33 +268,16 @@ class novaIRC extends EventEmitter {
                             code: 401
                         });
                         break;
-
-                    // Error commands
-                    case 'err_noprivileges':
-                    case 'err_chanoprivsneeded':
-                    case 'err_usernotinchannel':
-                    case 'err_nicknameinuse':
-                    case 'err_notregistered':
-                    case 'err_nicknameinuse':
-                    case 'err_notregistered':
-                    case 'err_channelisfull':
-                    case 'err_unknownmode':
-                    case 'err_inviteonlychan':
-                    case 'err_bannedfromchan':
-                    case 'err_alreadyregistred':
-                    case 'err_notregistered':
-                    case 'err_useronchannel':
-                    case 'err_notonchannel':
-                    case 'err_usernotinchannel':
-                    case 'err_badchannelkey':
                     case 'ERROR':
                         this.emit('error', new Error(), parsedMessage);
                         break;                    
                     default:
-                        this.emit('unknown', {
-                            command,
-                            raw: message
-                        });
+                        if(commandType == 'error')
+                        {
+                            this.emit('error', new Error(), parsedMessage);
+                        } else {
+                            this.emit('unknown', { command, raw: message  });
+                        }
                 }
             });
         });

@@ -1,7 +1,8 @@
 const nova = require('./irc-nova');
 
-// Criar a instância
+// Create the instance
 const bot = new nova();
+const channel = "#testingpg";
 
 // ##############################################
 // Credentials and Authentication
@@ -10,55 +11,55 @@ const bot = new nova();
 // Set bot credentials (nickname and username)
 // @Nick
 // @Realname
-// @password (opcional, null por defeito)
-bot.setCredentials('NovaIRC', 'Nova Portugal');
+// @password (optional, null by default)
+bot.setCredentials('NovaIRC', 'Nova IRC Bot');
 
-// Conetar-se ao chat
+// Connect to the chat
 bot.connect({
     server: 'irc.libera.chat',
     port: 6697,
     ssl: true,
-    messageColor: "green", // Escolher a cor permitida dentro da tabela IRC
+    messageColor: "red", // Choose an allowed color from the IRC table
     removeColors: true,
-    rejectUnauthorized: false, // Opcional, default é false
+    rejectUnauthorized: false, // Optional, default is false
 });
 
 
 // ##############################################
-// Eventos Listener
+// Event Listeners
 // ##############################################
 
-// Recebe um evento quando se conecta
+// Triggered when the bot connects
 bot.on('connected', () => {
-    // Junta-se ao canal.
-    bot.joinChannel('#testingpg', 'test');
+    // Join the channel.
+    bot.joinChannel(channel);
 });
 
-// Receber uma mensagem RAW
-// @message
-bot.on('raw', (message) => {
-    // console.log('Raw message:', message);
+// Receive a RAW message
+// @data
+bot.on('raw', (data) => {
+    // console.log(data);
 });
 
-// Receber um disconect
+// Receive a disconnect event
 bot.on('disconnected', () => {
     console.log('Bot disconnected from the server.');
 });
 
-// Receber um erro
+// Receive an error
 // @err.message
 // @raw - Returns raw parsed message
 bot.on('error', (err, raw) => {
     console.error('Error:', raw);
 });
 
-// Receber um ping // emite um pong automatico
+// Receive a ping (automatically responds with a pong)
 // @data.server
 bot.on('ping', (data) => {
     console.log(`PING received from ${data.server}`);
 });
 
-// Emitido sempre que recebe uma mensagem.
+// Triggered whenever a message is received.
 // @data.sender 
 // @data.target
 // @data.content
@@ -67,100 +68,96 @@ bot.on('message', (data) => {
     // console.log(`Message received in ${data.target}: ${data.content}`);
 });
 
-// Emitido sempre que recebe uma mensagem privada
+// Triggered when a private message is received
 // @data.sender 
 // @data.content
 // @data.raw
 bot.on('directMessage', (data) => {
-    console.log(`Mensagem Privada de ${data.sender}: ${data.content}`);
+    console.log(`Private message from ${data.sender}: ${data.content}`);
 
     if(data.content == "<message>")
     {
-        // Mandar mensagem no canal
+        // Send a message to the channel
         // @channel
         // @message
-        bot.sendMessage('#testingpg', 'Hello, IRC! MyBotNickname has joined.', 'red');
+        bot.sendMessage('#testingpg', 'Hello, IRC!', 'red');
 
-        // Mandar mensagem privada
+        // Send a private message
         // @user
         // @message
-        bot.sendMessage("heysus", 'Hello, IRC! MyBotNickname has joined.');
+        bot.sendMessage("nickname", 'Hello, nickname! How are you?.');
     }
 
     if(data.content == "<part>")
     {
-        // Sair de um canal em especifico
+        // Leave a specific channel
         // @channel
         // @Leaving Message
-        bot.part("#testingpg", 'Im done.');
+        bot.part(channel, 'Im done.');
     }
 
     if(data.content == "<join>")
     {
-        // Juntar-se a um canal
+        // Join a channel
         // @channel
-        bot.joinChannel('#testingpg');
+        bot.joinChannel(channel);
     }
 
     if(data.content == "<names>")
     {
-        // Obter users no canal
+        // Get users in the channel
         // @channel
-        bot.names('#testingpg');
+        bot.names(channel);
     }
 
     if(data.content == "<kick>")
     {
-        // Kicka o utilizador
+        // Kick a user
         // @channel
         // @user
         // @reason
-        bot.kick('#testingpg', 'JohnDoe59', "Kickado pelo bot");
+        bot.kick(channel, 'JohnDoe59', "Kicked by the bot");
     }
 
     if(data.content == "<ban>")
     {
-        // Kicka o utilizador
+        // Ban a user
         // @channel
         // @user
         // @reason
-        bot.ban('#testingpg', 'JohnDoe59@2001:818:df14:8c00:f08b:fad2:e1cd:63c5');
+        bot.ban(channel, 'JohnDoe59@2001:818:df14:8c00:f08b:fad2:e1cd:63c5');
     }
 
     if(data.content == "<banlist>")
     {
-        // Obtem a lista de bans do canal
+        // Get the channel ban list
         // @channel
-        bot.banlist('#testingpg');
-
+        bot.banlist(channel);
     }
 
     if(data.content == "<whois>")
     {
-        // Obtem a lista de bans do canal
-        // @channel
-        bot.whois('PannaCotta').then((whoisData) => {
+        // Get information about a user
+        // @user
+        bot.whois('Nickname').then((whoisData) => {
             console.log('WHOIS data:', whoisData);
         })
         .catch((err) => {
             console.error('WHOIS error:', err);
         });
-
-
     }
-   
 });
 
-// Emitido sempre que o canal recebe uma mensagem
+// Triggered whenever a message is received in a channel
 // @data.sender
 // @channel,
 // @data.content
 // @data.raw: 
 bot.on('channelMessage', (data) => {
-    console.log(`Mensagem no Canal: ${data.channel} de ${data.sender}: ${data.content}`);
+    console.log(`Channel message in ${data.channel} from ${data.sender}: ${data.content}`);
 });
 
-// MOTD
+// Message of the Day (MOTD)
 // @data.user,
 // @data.content
 // @data.raw: 
@@ -168,7 +165,7 @@ bot.on('motd', (data) => {
     console.log(`${data.content}`);
 });
 
-// Entrou no canal
+// User joined the channel
 // @data.user
 // @data.channel
 // @data.raw
@@ -176,7 +173,7 @@ bot.on('join', (data) => {
     console.log(`${data.user} joined ${data.channel}`);
 });
 
-// Saiu do canal
+// User left the channel
 // @data.user
 // @data.channel
 // @data.reason
@@ -185,14 +182,14 @@ bot.on('part', (data) => {
     console.log(`${data.user} left ${data.channel}: ${data.reason}`);
 });
 
-// Comando desconhecido
+// Unknown command received
 // @data.command
 // @data.raw
 bot.on('unknown', (data) => {
     console.log(`Unknown command ${data.command}: ${data.raw}`);
 });
 
-// Names
+// List of users in a channel
 // @data.channel
 // @data.names
 // @data.raw
@@ -200,7 +197,7 @@ bot.on('names', (data) => {
     console.log(`Users in ${data.channel}:`, data.names);
 });
 
-// Sempre que recebe uma noticia
+// Triggered when a notice is received
 // @data.target
 // @data.content
 // @data.raw
@@ -208,46 +205,21 @@ bot.on('notice', (data) => {
     console.log(`${data.content}`);
 });
 
-// Sempre que recebe uma noticia
+// Triggered when a user quits
 // @data.user
 // @data.channel
 // @data.reason
 // @data.raw
 bot.on('quit', (data) => {
-    console.log(`Utilizador ${data.user} saiu. (${data.reason})`);
+    console.log(`User ${data.user} quit. (${data.reason})`);
 });
 
-// Modo foi aplicado (emitido sempre que um modo é aplicado)
-// @data.user (canal ou user, comecando por # ou não.)
+// Mode was applied (triggered whenever a mode is set)
+// @data.user (channel or user, starting with # or not)
 // @data.mode
 // @affected
 bot.on('mode', (data) => {
     console.log(`[MODE] ${data.user} - Modes: ${data.mode}, Affected: ${data.affected}`);
 });
 
-// Emitido sempre que um utilizador é kickado
-// @data.kicker
-// @data.host
-// @data.channelKick
-// @data.kickedUser
-// @data.reason
-// @data.raw: message
-bot.on('kick', (data) => {
-    console.log(`${data.kickedUser} was kicked from ${data.channelKick} by ${data.kicker}. Reason: ${data.reason}`);
-});
-
-// Obtem a lista de bans
-// @data.channelban
-// @data.banMask
-// @data.setBy
-// @data.timestamp
-bot.on('banlist', (data) => {
-    console.log(data);
-});
-
-
-
-
-
-
-
+// Triggered whenever
