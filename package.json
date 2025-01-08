@@ -2,6 +2,7 @@
   "name": "nova-irc",
   "version": "1.0.1",
   "main": "irc-client.js",
+  "description": "Easy-to-use IRC client",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
