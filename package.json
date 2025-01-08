@@ -1,10 +1,14 @@
 {
   "name": "nova-irc",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "main": "irc-nova.js",
   "description": "Easy-to-use IRC client",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+  "type": "git",
+  "url": "git+https://github.com/BMSVieira/nova-irc.git"
   },
   "keywords": [
     "irc",
@@ -15,7 +19,11 @@
     "nodejs"
   ],
   "author": "Bruno Vieira",
-  "license": "ISC",
+  "license": "MIT",
+  "bugs": {
+  "url": "https://github.com/BMSVieira/nova-irc/issues"
+  },
+  "homepage": "https://github.com/BMSVieira/nova-irc#readme",
   "dependencies": {
     "buffer": "^6.0.3",
     "events": "^3.3.0",
