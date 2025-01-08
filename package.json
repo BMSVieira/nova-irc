@@ -1,11 +1,18 @@
 {
-  "name": "novairc",
-  "version": "1.0.0",
+  "name": "nova-irc",
+  "version": "1.0.1",
   "main": "irc-client.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
+  "keywords": [
+    "irc",
+    "chat",
+    "irc-client",
+    "messaging",
+    "bot",
+    "nodejs"
+  ],
   "author": "",
   "license": "ISC",
   "description": "",

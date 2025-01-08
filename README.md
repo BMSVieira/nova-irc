@@ -1,6 +1,17 @@
 <p align="center">
  <br>
- <img width="250" src="https://botsolutions.eu/assets/img/novairc/novamain1.png">
+<picture>
+    <source
+    srcset="https://botsolutions.eu/assets/img/novairc/novamain1.png"
+    media="(prefers-color-scheme: dark)"
+    width="250"
+    />
+    <img
+    src="https://botsolutions.eu/assets/img/novairc/novablack2.png"
+    alt="Web Dev Resources Logo"
+    width="250"
+    />
+  </picture>
  <br><br>
  Welcome to Nova IRC!<br><br>
  Lightweight IRC client built with Node.js, designed to provide a fast and seamless chat experience.<br>
