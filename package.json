@@ -1,6 +1,6 @@
 {
   "name": "nova-irc",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "main": "irc-client.js",
   "description": "Easy-to-use IRC client",
   "scripts": {
