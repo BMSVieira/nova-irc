@@ -1,23 +1,31 @@
 <p align="center">
- <br>
-<picture>
-    <source
-    srcset="https://botsolutions.eu/assets/img/novairc/novamain1.png"
-    media="(prefers-color-scheme: dark)"
-    width="250"
-    />
-    <img
-    src="https://botsolutions.eu/assets/img/novairc/novablack2.png"
-    alt="Web Dev Resources Logo"
-    width="250"
-    />
+  <br>
+  <picture>
+    <source srcset="https://botsolutions.eu/assets/img/novairc/novamain1.png" media="(prefers-color-scheme: dark)" width="250" />
+    <img src="https://botsolutions.eu/assets/img/novairc/novablack2.png" alt="Nova IRC Logo" width="250" />
   </picture>
- <br><br>
- Welcome to Nova IRC!<br><br>
- Lightweight IRC client built with Node.js, designed to provide a fast and seamless chat experience.<br>
- For more info, check our documentation: https://bmsvieira.gitbook.io/nova-irc
+  <br><br>
+  <h1>Nova IRC</h1>
+  <em>Lightweight, fast, and seamless IRC client built with Node.js.</em>
+  <br><br>
 </p>
 
+## 🚀 About
+
+Nova IRC is a modern and lightweight IRC (Internet Relay Chat) client designed for speed and efficiency. <br>Built with Node.js, it delivers a smooth and seamless chat experience.
+
+🔗 **Documentation**: [Nova IRC Docs](https://bmsvieira.gitbook.io/nova-irc)
+
+## 🤝 Contributing
+
+We welcome contributions! Feel free to submit a pull request or open an issue.
+
+## 📜 License
+
+This project is open-source and available under the [MIT License](LICENSE).
+
+---
+
 <p align="center">
-Feel free to contribute by open a pull request!
-</p><br><br>
+  ⭐ If you like Nova IRC, consider giving it a star on GitHub!
+</p>
