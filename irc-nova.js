@@ -21,6 +21,10 @@ class novaIRC extends EventEmitter {
         this.commandQueue = [];
         this.isProcessingQueue = false;
         this.floodProtectionDelay = 1000;
+
+        this.rejoinAttempts = {};
+        this.rejoinLimit = 3;
+        this.rejoinDelay = 5000;
     }
 
     // Conect to server (SSL is opcional, false by default)
@@ -32,6 +36,8 @@ class novaIRC extends EventEmitter {
                 removeColors = true,
                 messageColor = null,
                 rejectUnauthorized = false,
+                rejoinLimit = 3,
+                rejoinDelay = 5000
         } = options;
 
         // Conection type, based on SLL
@@ -44,6 +50,8 @@ class novaIRC extends EventEmitter {
 
         // Define variables
         this.messageColor = messageColor;
+        this.rejoinLimit = rejoinLimit;
+        this.rejoinDelay = rejoinDelay;
 
         // Connect to server
         this.client.on('connect', () => {
@@ -105,6 +113,8 @@ class novaIRC extends EventEmitter {
                     case 'rpl_endofnames':
                     case '396':
                     case '042':
+                    case '378':
+                    case '330':
                         // Ignore these commands
                     break;
                     case 'rpl_motd':
@@ -257,9 +267,31 @@ class novaIRC extends EventEmitter {
                             host: parsedMessage.host,
                             channelKick: params[0],
                             kickedUser: params[1],
-                            reason: params[2],
+                            reason: params[2] || '',
                             raw: message,
                         });
+
+                        // Handle auto-rejoin if the bot is the kicked user
+                        if (params[1] === this.nickname) {
+                            const channel = params[0];
+
+                            // Emits event, it might be usefull to know if bot was kicked.
+                            this.emit('botKicked');
+
+                            // If the bot is kicked, try to rejoin after a delay
+                            if (!this.rejoinAttempts[channel]) {
+                                this.rejoinAttempts[channel] = 0;
+                            }
+
+                            if (this.rejoinAttempts[channel] < this.rejoinLimit) {
+                                this.rejoinAttempts[channel]++;
+
+                                // Delay rejoin attempt
+                                setTimeout(() => {
+                                    this.rejoinChannel(channel);
+                                }, this.rejoinDelay);
+                            }
+                        }
                         break;
                     case 'err_nosuchnick':
                         this.emit('error', new Error(), parsedMessage);
@@ -268,6 +300,10 @@ class novaIRC extends EventEmitter {
                             code: 401
                         });
                         break;
+                        case '307':
+                            // Some old servers send this numeric to indicate a registered nick
+                            this.emit('whoisRegistered', { nick: params[1], registered: params[2] === 'is a registered nick' });
+                            break;
                     case 'ERROR':
                         this.emit('error', new Error(), parsedMessage);
                         break;                    
@@ -302,7 +338,14 @@ class novaIRC extends EventEmitter {
         this.lastPingTime = Date.now();
     }
 
-    // Verifica se o servidor envia ping, senão envia o pong para manter vivo.
+    // Method to rejoin a channel
+    rejoinChannel(channel) {
+        console.log(`Attempting to rejoin channel: ${channel}`);
+        this.sendRaw(`JOIN ${channel}`);
+        this.rejoinAttempts[channel] = 0; // Reset attempts on success
+    }
+
+    // Check if server is silent for too long, if it is, sends a pong.
     startPingChecker() {
         setInterval(() => {
             const now = Date.now();
@@ -506,6 +549,7 @@ class novaIRC extends EventEmitter {
                 idleTime: null,
                 channels: [],
                 isOperator: false,
+                isRegistered: false,  // <-- Add registration status
             };
     
             const handleWhoisUser = (data) => {
@@ -531,6 +575,12 @@ class novaIRC extends EventEmitter {
                 whoisData.isOperator = true;
             };
     
+            const handleWhoisRegistered = (data) => {
+                if (data.nick === nickname) { // Ensure it's for the correct user
+                    whoisData.isRegistered = data.registered;
+                }
+            };
+    
             const handleWhoisEnd = () => {
                 cleanup();
                 resolve(whoisData);
@@ -549,6 +599,7 @@ class novaIRC extends EventEmitter {
                 this.off('whoisChannels', handleWhoisChannels);
                 this.off('whoisIdle', handleWhoisIdle);
                 this.off('whoisOperator', handleWhoisOperator);
+                this.off('whoisRegistered', handleWhoisRegistered); // Remove registration listener
                 this.off('whoisEnd', handleWhoisEnd);
                 this.off('whoisError', handleWhoisError);
             };
@@ -559,8 +610,9 @@ class novaIRC extends EventEmitter {
             this.on('whoisChannels', handleWhoisChannels);
             this.on('whoisIdle', handleWhoisIdle);
             this.on('whoisOperator', handleWhoisOperator);
+            this.on('whoisRegistered', handleWhoisRegistered); // Listen for registration status
             this.on('whoisEnd', handleWhoisEnd);
-            this.on('whoisError', handleWhoisError); // Handle WHOIS errors
+            this.on('whoisError', handleWhoisError);
     
             // Send WHOIS command
             try {
@@ -571,6 +623,7 @@ class novaIRC extends EventEmitter {
             }
         });
     }
+    
 }
 
 module.exports = novaIRC;

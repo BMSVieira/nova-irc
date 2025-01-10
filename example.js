@@ -2,7 +2,7 @@ const nova = require('./irc-nova');
 
 // Create the instance
 const bot = new nova();
-const channel = "#testingpg";
+const channel = "#novatesting";
 
 // ##############################################
 // Credentials and Authentication
@@ -22,6 +22,8 @@ bot.connect({
     messageColor: "red", // Choose an allowed color from the IRC table
     removeColors: true,
     rejectUnauthorized: false, // Optional, default is false
+    rejoinLimit: 3,
+    rejoinDelay: 5000 // ms
 });
 
 
@@ -203,6 +205,11 @@ bot.on('names', (data) => {
 // @data.raw
 bot.on('notice', (data) => {
     console.log(`${data.content}`);
+});
+
+// Triggered when bot is kicked
+bot.on('botKicked', () => {
+    console.log(`Bot was kicked.`);
 });
 
 // Triggered when a user quits
