@@ -19,11 +19,12 @@ bot.connect({
     server: 'irc.libera.chat',
     port: 6697,
     ssl: true,
-    messageColor: "red", // Choose an allowed color from the IRC table
+    messageColor: "white", // Choose an allowed color from the IRC table
     removeColors: true,
     rejectUnauthorized: false, // Optional, default is false
     rejoinLimit: 3,
-    rejoinDelay: 5000 // ms
+    rejoinDelay: 5000, // ms
+    maxLineLength: 350
 });
 
 
@@ -82,7 +83,8 @@ bot.on('directMessage', (data) => {
         // Send a message to the channel
         // @channel
         // @message
-        bot.sendMessage('#testingpg', 'Hello, IRC!', 'red');
+        let longMessage = "This is a very long message ".repeat(50); // Just an example of a long message
+        bot.sendMessage(channel, longMessage, "blue");
 
         // Send a private message
         // @user
@@ -221,11 +223,19 @@ bot.on('quit', (data) => {
     console.log(`User ${data.user} quit. (${data.reason})`);
 });
 
-// Mode was applied (triggered whenever a mode is set)
+// Mode was applied (triggered whenever a +mode is set)
 // @data.user (channel or user, starting with # or not)
 // @data.mode
 // @affected
-bot.on('mode', (data) => {
+bot.on('+mode', (data) => {
+    console.log(`[MODE] ${data.user} - Modes: ${data.mode}, Affected: ${data.affected}`);
+});
+
+// Mode was applied (triggered whenever a -mode is set)
+// @data.user (channel or user, starting with # or not)
+// @data.mode
+// @affected
+bot.on('-mode', (data) => {
     console.log(`[MODE] ${data.user} - Modes: ${data.mode}, Affected: ${data.affected}`);
 });
 

@@ -37,7 +37,8 @@ class novaIRC extends EventEmitter {
                 messageColor = null,
                 rejectUnauthorized = false,
                 rejoinLimit = 3,
-                rejoinDelay = 5000
+                rejoinDelay = 5000,
+                maxLineLength = 350
         } = options;
 
         // Conection type, based on SLL
@@ -52,6 +53,7 @@ class novaIRC extends EventEmitter {
         this.messageColor = messageColor;
         this.rejoinLimit = rejoinLimit;
         this.rejoinDelay = rejoinDelay;
+        this.maxLineLength = maxLineLength;
 
         // Connect to server
         this.client.on('connect', () => {
@@ -254,7 +256,10 @@ class novaIRC extends EventEmitter {
                         });
                         break;
                     case 'MODE':
-                        this.emit('mode', {
+                        const modeChar = params[1]?.charAt(0);
+                        const modeEvent = modeChar === '+' ? '+mode' : modeChar === '-' ? '-mode' : 'mode';
+                    
+                        this.emit(modeEvent, {
                             user: parsedMessage.nick,
                             mode: params[1],
                             affected: params[2],
@@ -431,39 +436,58 @@ class novaIRC extends EventEmitter {
 
     // Sends a message to a user or channel
     sendMessage(target, message, color = null) {
-
-        // If predefined color is not null.
-        if(this.messageColor != null) { color = this.messageColor; }
-
-        const COLORS = {
-            white: '0',
-            black: '1',
-            blue: '2',
-            green: '3',
-            red: '4',
-            brown: '5',
-            purple: '6',
-            orange: '7',
-            yellow: '8',
-            light_green: '9',
-            cyan: '10',
-            light_cyan: '11',
-            light_blue: '12',
-            pink: '13',
-            grey: '14',
-            light_grey: '15',
-        };
-    
-        let formattedMessage = message;
-    
-        if (color && COLORS[color.toLowerCase()]) {
-            const colorCode = COLORS[color.toLowerCase()];
-            const RESET = '\x03'; // Resets formatting
-            formattedMessage = `\x03${colorCode}${message}${RESET}`;
+        if (this.messageColor != null) {
+            color = this.messageColor;
         }
     
-        this.sendRaw(`PRIVMSG ${target} :${formattedMessage}`);
+        const COLORS = {
+            white: '0', black: '1', blue: '2', green: '3', red: '4',
+            brown: '5', purple: '6', orange: '7', yellow: '8', light_green: '9',
+            cyan: '10', light_cyan: '11', light_blue: '12', pink: '13',
+            grey: '14', light_grey: '15',
+        };
+    
+        const MAX_LINE_LENGTH = this.maxLineLength
+        const RESET = '\x03';
+    
+        let colorCode = '';
+        if (color && COLORS[color.toLowerCase()]) {
+            colorCode = `${RESET}${COLORS[color.toLowerCase()]}`;
+        }
+    
+        function splitMessage(message) {
+            let words = message.split(' ');
+            let lines = [];
+            let currentLine = '';
+    
+            words.forEach((word) => {
+                let testLine = currentLine.length ? `${currentLine} ${word}` : word;
+    
+                if (testLine.length + colorCode.length + RESET.length <= MAX_LINE_LENGTH) {
+                    currentLine = testLine;
+                } else {
+                    if (currentLine) {
+                        lines.push(currentLine);
+                    }
+                    currentLine = word;
+                }
+            });
+    
+            if (currentLine) {
+                lines.push(currentLine);
+            }
+    
+            return lines;
+        }
+    
+        const messageParts = splitMessage(message);
+    
+        messageParts.forEach((part, index) => {
+            let formattedPart = colorCode ? `${colorCode}${part}${RESET}` : part;
+            this.sendRaw(`PRIVMSG ${target} :${formattedPart}`);
+        });
     }
+
 
     // Sends RAW message to the server
     sendRaw(command) {
