@@ -8,6 +8,10 @@
   <h1>Nova IRC</h1>
   <em>Lightweight, fast, and seamless IRC client built with Node.js.</em>
   <br><br>
+  <div style="display: flex; justify-content: center; gap: 10px;">
+    <img alt="NPM Downloads" src="https://img.shields.io/npm/dw/nova-irc">
+    <img alt="NPM Version" src="https://img.shields.io/npm/v/nova-irc">
+  </div>
 </p>
 
 ## 🚀 About
