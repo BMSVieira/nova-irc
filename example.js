@@ -150,6 +150,13 @@ bot.on('directMessage', (data) => {
             console.error('WHOIS error:', err);
         });
     }
+
+    if(data.content == "<getusers>")
+    {
+        console.log(bot.userManager.getUserInfo('Joaquim'));
+    }
+
+   
 });
 
 // Triggered whenever a message is received in a channel
@@ -169,12 +176,41 @@ bot.on('motd', (data) => {
     console.log(`${data.content}`);
 });
 
-// User joined the channel
+// User joined the channel, raw event with basic info.
 // @data.user
 // @data.channel
 // @data.raw
 bot.on('join', (data) => {
     console.log(`${data.user} joined ${data.channel}`);
+});
+
+// User joined the channel via userManager module that returns a complete whois info of that user.
+// @data.username
+// @data.host
+// @data.realName
+// @data.server
+// @data.serverInfo
+// @data.idleTime
+// @data.channels
+// @data.isOperator
+// @data.isRegistered
+bot.userManager.on('join', (data) => {
+    console.log(`User Join:`);
+    console.log(data);
+});
+
+// Receive complete Whois info
+// @data.username
+// @data.host
+// @data.realName
+// @data.server
+// @data.serverInfo
+// @data.idleTime
+// @data.channels
+// @data.isOperator
+// @data.isRegistered
+bot.on('whois', (data) => {
+    // console.log(data);
 });
 
 // User left the channel

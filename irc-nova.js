@@ -3,8 +3,11 @@ const tls = require('tls');
 const EventEmitter = require('events');
 
 // Extra modules
-const novaCodes = require('./nova-irc-codes');
-var novaColors = require('./nova-strip-colors');
+const novaCodes = require('./core/nova-irc-codes');
+var novaColors = require('./core/nova-strip-colors');
+
+// Modules
+const UserManager = require('./modules/userManager');
 
 class novaIRC extends EventEmitter {
 
@@ -25,6 +28,11 @@ class novaIRC extends EventEmitter {
         this.rejoinAttempts = {};
         this.rejoinLimit = 3;
         this.rejoinDelay = 5000;
+
+        this.plugins = [];
+
+        this.userManager = new UserManager(); // instance of UserManager
+        this.registerPlugin(this.userManager); // Register it as a plugin
     }
 
     // Conect to server (SSL is opcional, false by default)
@@ -117,6 +125,8 @@ class novaIRC extends EventEmitter {
                     case '042':
                     case '378':
                     case '330':
+                    case '671':
+                    case '338':
                         // Ignore these commands
                     break;
                     case 'rpl_motd':
@@ -239,8 +249,19 @@ class novaIRC extends EventEmitter {
                             channel: params[0],
                             raw: message,
                         });
+
+                        // Trigger WHOIS request when someone joins
+                        this.whois(parsedMessage.nick)
+                        .then((whoisData) => {
+                            this.emit('whoisComplete', whoisData); // Emit WHOIS data after completion
+                        })
+                        .catch((err) => {
+                            console.error(`[WHOIS Error] ${err.message}`);
+                        });
+
                         break;
                     case 'PART':
+
                         this.emit('part', {
                             user: parsedMessage.nick,
                             channel: params[0],
@@ -330,6 +351,12 @@ class novaIRC extends EventEmitter {
         this.client.on('error', (err) => {
             this.emit('error', new Error(`Connection error: ${err.message}`));
         });
+    }
+
+    // Regists plugins
+    registerPlugin(plugin) {
+        plugin.init(this);
+        this.plugins.push(plugin);
     }
 
     // Trata o Ping e envia automaticamente o PING
@@ -607,6 +634,8 @@ class novaIRC extends EventEmitter {
     
             const handleWhoisEnd = () => {
                 cleanup();
+                this.emit('userManager_whoIs', whoisData); // Emit WHOIS data when done
+                this.emit('whois', whoisData); // Emit WHOIS data when done
                 resolve(whoisData);
             };
     
